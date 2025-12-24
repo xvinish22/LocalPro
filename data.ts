@@ -4,7 +4,7 @@ import { ServiceProvider, ServiceCategory } from './types';
 // Locations are now specific to Pune for the limited launch
 export const mockServiceProviders: ServiceProvider[] = [
   {
-    id: '1',
+    uid: '1',
     name: 'Rajesh Kumar',
     profilePhoto: 'https://picsum.photos/id/1005/200/200',
     isVerified: true,
@@ -25,7 +25,7 @@ export const mockServiceProviders: ServiceProvider[] = [
     ],
   },
   {
-    id: '2',
+    uid: '2',
     name: 'Sunita Sharma',
     profilePhoto: 'https://picsum.photos/id/1011/200/200',
     isVerified: true,
@@ -45,7 +45,7 @@ export const mockServiceProviders: ServiceProvider[] = [
     ],
   },
   {
-    id: '3',
+    uid: '3',
     name: 'Amit Singh',
     profilePhoto: 'https://picsum.photos/id/1025/200/200',
     isVerified: false,
@@ -63,7 +63,7 @@ export const mockServiceProviders: ServiceProvider[] = [
     reviews: [],
   },
   {
-    id: '4',
+    uid: '4',
     name: 'Karan Mehra',
     profilePhoto: 'https://picsum.photos/id/1084/200/200',
     isVerified: true,

@@ -1,6 +1,7 @@
 
-import React, { useState, useCallback } from 'react';
-import { UserRole, ServiceProvider } from './types';
+import React, { useState, useEffect, useCallback } from 'react';
+import { User } from 'firebase/auth';
+import { UserRole, ServiceProvider, UserProfile } from './types';
 import LandingScreen from './screens/LandingScreen';
 import SearchScreen from './screens/Customer/SearchScreen';
 import ListingScreen from './screens/Customer/ListingScreen';
@@ -11,196 +12,172 @@ import OnboardingScreen from './screens/Provider/OnboardingScreen';
 import DashboardScreen from './screens/Provider/DashboardScreen';
 import { mockServiceProviders } from './data';
 import { ArrowLeftIcon } from './components/icons';
+import { onAuthStateChangedListener, signOutUser } from './firebase';
 
 // --- Profile Management Screen Component ---
-// This component is placed here to avoid creating a new file, as per the constraints.
 interface ProfileManagementScreenProps {
   provider: ServiceProvider;
   onUpdateProfile: (provider: ServiceProvider) => void;
   onBack: () => void;
 }
-
 const ProfileManagementScreen: React.FC<ProfileManagementScreenProps> = ({ provider, onUpdateProfile, onBack }) => {
   const [price, setPrice] = useState(provider.pricePerHour);
   const [experience, setExperience] = useState(provider.experienceYears);
-
   const handleSave = () => {
-    if (!price || price <= 0) {
-      alert("Price must be a positive number.");
-      return;
-    }
-    if (!experience || experience <= 0) {
-      alert("Experience must be a positive number.");
-      return;
-    }
-    onUpdateProfile({
-      ...provider,
-      pricePerHour: price,
-      experienceYears: experience,
-    });
+    onUpdateProfile({ ...provider, pricePerHour: price, experienceYears: experience });
   };
-
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <header className="p-4 bg-white border-b sticky top-0 z-10">
-        <div className="flex items-center">
-          <button onClick={onBack} className="p-2 -ml-2 mr-2">
-            <ArrowLeftIcon className="w-6 h-6 text-gray-600" />
-          </button>
-          <h1 className="text-xl font-bold text-gray-800">Manage Profile</h1>
-        </div>
+      <header className="p-4 bg-white border-b sticky top-0 z-10 flex items-center">
+        <button onClick={onBack} className="p-2 -ml-2 mr-2"><ArrowLeftIcon className="w-6 h-6 text-gray-600" /></button>
+        <h1 className="text-xl font-bold text-gray-800">Manage Profile</h1>
       </header>
-      <main className="flex-grow p-5 space-y-6 overflow-y-auto">
-        {/* Price Input Section */}
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold mb-3">Your Price</h3>
-          <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">Price per hour</label>
-          <div className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
-            <span className="text-gray-500 font-semibold">₹</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              id="price"
-              value={price ? price : ''}
-              onChange={e => setPrice(parseInt(e.target.value) || 0)}
-              placeholder="Enter price"
-              className="w-full text-lg outline-none bg-transparent"
-            />
-            <span className="text-gray-500">/ hour</span>
-          </div>
+      <main className="flex-grow p-5 space-y-6">
+        <div>
+          <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">Price per hour (₹)</label>
+          <input type="number" id="price" value={price} onChange={e => setPrice(parseInt(e.target.value) || 0)} className="w-full p-3 border rounded-lg" />
         </div>
-
-        {/* Experience Input Section */}
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold mb-3">Your Experience</h3>
-          <label htmlFor="experience" className="block text-sm font-medium text-gray-700 mb-1">How many years of experience do you have?</label>
-          <input
-            type="text"
-            inputMode="numeric"
-            id="experience"
-            placeholder="e.g., 5"
-            value={experience ? experience : ''}
-            onChange={e => setExperience(parseInt(e.target.value) || 0)}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          />
+        <div>
+          <label htmlFor="experience" className="block text-sm font-medium text-gray-700 mb-1">Years of experience</label>
+          <input type="number" id="experience" value={experience} onChange={e => setExperience(parseInt(e.target.value) || 0)} className="w-full p-3 border rounded-lg" />
         </div>
       </main>
       <footer className="p-4 border-t bg-white sticky bottom-0">
-        <button onClick={handleSave} className="w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:bg-blue-600 transition-all">
-          Save Changes
-        </button>
+        <button onClick={handleSave} className="w-full bg-blue-500 text-white font-bold py-3 rounded-lg">Save Changes</button>
       </footer>
     </div>
   );
 };
 
-
 // --- Main App Component ---
 const App: React.FC = () => {
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  // Auth state
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // App state
   const [view, setView] = useState('landing');
   const [selectedProvider, setSelectedProvider] = useState<ServiceProvider | null>(null);
   const [lastBooking, setLastBooking] = useState<{provider: ServiceProvider, service: string} | null>(null);
   
+  // Data state (simulating a database)
+  const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
   const [allProviders, setAllProviders] = useState<ServiceProvider[]>(mockServiceProviders);
-  const [currentProviderId, setCurrentProviderId] = useState<string | null>(null);
+
+  // Session management effect
+  useEffect(() => {
+    const unsubscribe = onAuthStateChangedListener((user) => {
+      setIsLoading(true);
+      if (user) {
+        setAuthUser(user);
+        // Find existing profile in our "database"
+        const existingProfile = userProfiles.find(p => p.uid === user.uid);
+        if (existingProfile) {
+          setUserProfile(existingProfile);
+          setView(existingProfile.role === UserRole.Customer ? 'search' : 'dashboard');
+        } else {
+          // New user, wait for role selection
+          setUserProfile(null);
+          setView('roleSelection');
+        }
+      } else {
+        setAuthUser(null);
+        setUserProfile(null);
+        setView('landing');
+      }
+      setIsLoading(false);
+    });
+    return unsubscribe;
+  }, [userProfiles]);
+
+  const handleSignOut = async () => {
+    await signOutUser();
+  };
 
   const handleRoleSelect = (role: UserRole) => {
-    setUserRole(role);
-    if (role === UserRole.Customer) {
-      setView('search');
-    } else {
-      setView('onboarding');
-    }
+    if (!authUser) return;
+    const newProfile: UserProfile = {
+      uid: authUser.uid,
+      role,
+      email: authUser.email!,
+      name: authUser.displayName!,
+      photoURL: authUser.photoURL || undefined,
+    };
+    setUserProfiles(prev => [...prev, newProfile]);
+    setUserProfile(newProfile);
+    setView(role === UserRole.Customer ? 'search' : 'onboarding');
   };
-
-  const handleGoHome = () => {
-    setUserRole(null);
-    setView('landing');
-    setSelectedProvider(null);
-    setLastBooking(null);
-    setCurrentProviderId(null);
-  };
-
-  const handleProviderOnboardingComplete = (newProviderData: Omit<ServiceProvider, 'id'>) => {
+  
+  const handleProviderOnboardingComplete = (newProviderData: Omit<ServiceProvider, 'uid'>) => {
+    if (!userProfile || userProfile.role !== UserRole.Provider) return;
     const newProvider: ServiceProvider = {
         ...newProviderData,
-        id: `provider_${Date.now()}`
+        uid: userProfile.uid,
+        name: userProfile.name, // Use name from Google profile
+        profilePhoto: userProfile.photoURL || 'https://picsum.photos/id/1084/200/200',
     };
     setAllProviders(prev => [...prev, newProvider]);
-    setCurrentProviderId(newProvider.id);
     setView('dashboard');
   };
 
   const handleToggleOnlineStatus = (providerId: string, isOnline: boolean) => {
-    setAllProviders(prev => prev.map(p => p.id === providerId ? { ...p, isOnline } : p));
-  };
-
-  const handleManageProfile = () => {
-    setView('profileManagement');
-  };
-
-  const handleProfileUpdate = (updatedProviderData: ServiceProvider) => {
-    setAllProviders(prev => prev.map(p => p.id === updatedProviderData.id ? updatedProviderData : p));
-    setView('dashboard');
-  };
-
-  const handleSearch = useCallback((_service: string, _location: string) => {
-    setView('listing');
-  }, []);
-
-  const handleViewProfile = (provider: ServiceProvider) => {
-    setSelectedProvider(provider);
-    setView('profile');
+    setAllProviders(prev => prev.map(p => p.uid === providerId ? { ...p, isOnline } : p));
   };
   
-  const handleBook = (provider: ServiceProvider) => {
-    setSelectedProvider(provider);
-    setView('booking');
+  const handleProfileUpdate = (updatedProviderData: ServiceProvider) => {
+    setAllProviders(prev => prev.map(p => p.uid === updatedProviderData.uid ? updatedProviderData : p));
+    setView('dashboard');
   };
+  
+  const handleGoHome = () => {
+    setView(userProfile?.role === UserRole.Customer ? 'search' : 'dashboard');
+    setSelectedProvider(null);
+    setLastBooking(null);
+  }
 
+  // Customer flow handlers
+  const handleSearch = useCallback(() => setView('listing'), []);
+  const handleViewProfile = (provider: ServiceProvider) => { setSelectedProvider(provider); setView('profile'); };
+  const handleBook = (provider: ServiceProvider) => { setSelectedProvider(provider); setView('booking'); };
   const handleBookingConfirmed = (provider: ServiceProvider, service: string) => {
     setLastBooking({ provider, service });
-    setTimeout(() => {
-        setView('rating');
-    }, 3000);
+    setTimeout(() => setView('rating'), 3000);
   };
-
-  const handleRatingSubmitted = () => {
-    setLastBooking(null);
-    setView('search');
-  };
+  const handleRatingSubmitted = () => { setLastBooking(null); setView('search'); };
 
   const renderContent = () => {
-    if (userRole === UserRole.Customer) {
+    if (isLoading) {
+      return <div className="flex justify-center items-center h-screen"><div>Loading...</div></div>;
+    }
+
+    if (!authUser) {
+      return <LandingScreen />;
+    }
+    
+    if (!userProfile) {
+      return <LandingScreen onRoleSelect={handleRoleSelect} isSelectingRole />;
+    }
+
+    if (userProfile.role === UserRole.Customer) {
       switch (view) {
-        case 'search':
-          return <SearchScreen onSearch={handleSearch} onGoHome={handleGoHome} />;
-        case 'listing':
-          return <ListingScreen providers={allProviders} onViewProfile={handleViewProfile} onBook={handleBook} onBack={() => setView('search')} onGoHome={handleGoHome} />;
-        case 'profile':
-          return selectedProvider && <ProfileScreen provider={selectedProvider} onBook={handleBook} onBack={() => setView('listing')} />;
-        case 'booking':
-          return selectedProvider && <BookingScreen provider={selectedProvider} onBookingConfirmed={handleBookingConfirmed} onBack={() => setView('profile')} />;
-        case 'rating':
-          return lastBooking && <RatingScreen booking={lastBooking} onRatingSubmitted={handleRatingSubmitted} />;
-        default:
-          return <SearchScreen onSearch={handleSearch} onGoHome={handleGoHome} />;
+        case 'search': return <SearchScreen onSearch={handleSearch} onSignOut={handleSignOut} />;
+        case 'listing': return <ListingScreen providers={allProviders} onViewProfile={handleViewProfile} onBook={handleBook} onBack={() => setView('search')} />;
+        case 'profile': return selectedProvider && <ProfileScreen provider={selectedProvider} onBook={handleBook} onBack={() => setView('listing')} />;
+        case 'booking': return selectedProvider && <BookingScreen provider={selectedProvider} onBookingConfirmed={handleBookingConfirmed} onBack={() => setView('profile')} />;
+        case 'rating': return lastBooking && <RatingScreen booking={lastBooking} onRatingSubmitted={handleRatingSubmitted} />;
+        default: return <SearchScreen onSearch={handleSearch} onSignOut={handleSignOut} />;
       }
-    } else if (userRole === UserRole.Provider) {
-      const currentProvider = allProviders.find(p => p.id === currentProviderId);
+    } 
+    
+    if (userProfile.role === UserRole.Provider) {
+      const currentProvider = allProviders.find(p => p.uid === userProfile.uid);
       switch (view) {
-        case 'onboarding':
-          return <OnboardingScreen onOnboardingComplete={handleProviderOnboardingComplete} />;
-        case 'dashboard':
-          return currentProvider && <DashboardScreen provider={currentProvider} onGoHome={handleGoHome} onToggleOnline={handleToggleOnlineStatus} onManageProfile={handleManageProfile} />;
-        case 'profileManagement':
-          return currentProvider && <ProfileManagementScreen provider={currentProvider} onUpdateProfile={handleProfileUpdate} onBack={() => setView('dashboard')} />;
-        default:
-          return <OnboardingScreen onOnboardingComplete={handleProviderOnboardingComplete} />;
+        case 'onboarding': return <OnboardingScreen onOnboardingComplete={handleProviderOnboardingComplete} />;
+        case 'dashboard': return currentProvider ? <DashboardScreen provider={currentProvider} onSignOut={handleSignOut} onToggleOnline={handleToggleOnlineStatus} onManageProfile={() => setView('profileManagement')} /> : <OnboardingScreen onOnboardingComplete={handleProviderOnboardingComplete} />;
+        case 'profileManagement': return currentProvider && <ProfileManagementScreen provider={currentProvider} onUpdateProfile={handleProfileUpdate} onBack={() => setView('dashboard')} />;
+        default: return <OnboardingScreen onOnboardingComplete={handleProviderOnboardingComplete} />;
       }
-    } else {
-      return <LandingScreen onRoleSelect={handleRoleSelect} />;
     }
   };
 

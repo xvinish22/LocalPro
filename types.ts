@@ -12,6 +12,15 @@ export enum ServiceCategory {
   Painter = 'Painter',
 }
 
+// New type to store user role linked to their auth uid
+export interface UserProfile {
+  uid: string;
+  role: UserRole;
+  email: string;
+  name: string;
+  photoURL?: string;
+}
+
 export interface Review {
   id: string;
   authorName: string;
@@ -22,7 +31,7 @@ export interface Review {
 }
 
 export interface ServiceProvider {
-  id:string;
+  uid: string; // Changed from id to uid for Firebase integration
   name: string;
   profilePhoto: string;
   isVerified: boolean; // Platform verified (e.g. after manual check)

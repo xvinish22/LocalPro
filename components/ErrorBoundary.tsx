@@ -1,4 +1,4 @@
-// FIX: Reverted to the standard class component pattern by importing `Component` as a named export from 'react' and extending it. This resolves the TypeScript error where `this.props` was not found on the class instance.
+// FIX: Extended `React.Component` to make `this.props` available, resolving the error "Property 'props' does not exist on type 'ErrorBoundary'".
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {

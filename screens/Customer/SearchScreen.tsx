@@ -4,10 +4,10 @@ import { MapPinIcon } from '../../components/icons';
 
 interface SearchScreenProps {
   onSearch: (service: string, location: string) => void;
-  onGoHome: () => void;
+  onSignOut: () => void;
 }
 
-const SearchScreen: React.FC<SearchScreenProps> = ({ onSearch, onGoHome }) => {
+const SearchScreen: React.FC<SearchScreenProps> = ({ onSearch, onSignOut }) => {
   const [service, setService] = useState('');
   const [location, setLocation] = useState('');
   const [isLocating, setIsLocating] = useState(false);
@@ -37,8 +37,8 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ onSearch, onGoHome }) => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col p-6 relative">
-        <button onClick={onGoHome} className="absolute top-6 right-6 text-sm font-semibold text-blue-600 hover:underline z-10">
-            Change Role
+        <button onClick={onSignOut} className="absolute top-6 right-6 text-sm font-semibold text-red-600 hover:underline z-10">
+            Sign Out
         </button>
         <h1 className="text-3xl font-bold text-gray-800 mt-8">What service do you need?</h1>
         <p className="text-gray-500 mt-2">Book reliable professionals at a tap.</p>

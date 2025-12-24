@@ -5,17 +5,16 @@ import { ServiceProvider } from '../../types';
 
 interface DashboardScreenProps {
   provider: ServiceProvider;
-  onGoHome: () => void;
+  onSignOut: () => void;
   onToggleOnline: (providerId: string, isOnline: boolean) => void;
   onManageProfile: () => void;
 }
 
-const DashboardScreen: React.FC<DashboardScreenProps> = ({ provider, onGoHome, onToggleOnline, onManageProfile }) => {
+const DashboardScreen: React.FC<DashboardScreenProps> = ({ provider, onSignOut, onToggleOnline, onManageProfile }) => {
     const isNewProvider = provider.jobsCompleted === 0;
 
     const handleToggle = () => {
         const wantsToGoOnline = !provider.isOnline;
-        // MVP REQUIREMENT: Check for profile completeness before allowing a provider to go online.
         if (wantsToGoOnline) {
             if (!provider.pricePerHour || provider.pricePerHour <= 0) {
                 alert("Please set your price per hour before going online. You can do this in 'Manage Profile'.");
@@ -30,7 +29,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ provider, onGoHome, o
                 return;
             }
         }
-        onToggleOnline(provider.id, wantsToGoOnline);
+        onToggleOnline(provider.uid, wantsToGoOnline);
     };
 
     const StatCard: React.FC<{title: string, value: string | number, colorClass: string}> = ({title, value, colorClass}) => (
@@ -40,8 +39,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ provider, onGoHome, o
         </div>
     );
     
-    // MVP REQUIREMENT: The dashboard UI renders immediately without checking for admin approval.
-    // The "Waiting for admin approval" banner has been removed.
     return (
         <div className="bg-gray-50 min-h-screen">
             <header className="bg-blue-600 p-4 text-white">
@@ -59,7 +56,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ provider, onGoHome, o
             <main className="p-4 space-y-4 pb-32">
                  {isNewProvider && (
                     <div className="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded-lg text-center">
-                        <p className="font-semibold">Welcome! You are a New Provider.</p>
+                        <p className="font-semibold">Welcome, {provider.name}!</p>
                         <p className="text-sm">Complete jobs to start getting ratings and earnings.</p>
                     </div>
                  )}
@@ -89,8 +86,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ provider, onGoHome, o
             <footer className="p-4 fixed bottom-0 w-full max-w-md mx-auto bg-gray-50/80 backdrop-blur-sm border-t border-gray-200">
                  <div className="space-y-2">
                     <button onClick={onManageProfile} className="w-full bg-white text-blue-600 border-2 border-blue-600 font-bold py-3 rounded-lg shadow-md hover:bg-blue-50">Manage Profile</button>
-                    <button onClick={onGoHome} className="w-full text-gray-600 font-semibold py-2 rounded-lg hover:bg-gray-100 transition-colors">
-                        Change Role
+                    <button onClick={onSignOut} className="w-full text-red-600 font-semibold py-2 rounded-lg hover:bg-red-50 transition-colors">
+                        Sign Out
                     </button>
                  </div>
             </footer>
