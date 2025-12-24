@@ -1,4 +1,7 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+// FIX: Using `React.Component` directly instead of a named import `Component`
+// to make the base class reference more explicit and resolve potential import issues
+// that can cause the "Property 'props' does not exist" error.
+import React, { ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -8,7 +11,7 @@ interface State {
   hasError: boolean;
 }
 
-class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundary extends React.Component<Props, State> {
   state: State = {
     hasError: false,
   };

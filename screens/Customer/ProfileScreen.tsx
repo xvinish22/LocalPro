@@ -11,32 +11,6 @@ interface ProfileScreenProps {
 }
 
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ provider, onBook, onBack }) => {
-  const TrustIndicator: React.FC<{ label: string; status: 'verified' | 'pending' | 'unverified' | boolean }> = ({ label, status }) => {
-    let isVerified = status === 'verified' || status === true;
-    let isPending = status === 'pending';
-    
-    let bgColor = 'bg-gray-100';
-    let textColor = 'text-gray-500';
-    let iconColor = 'text-gray-400';
-    
-    if (isVerified) {
-        bgColor = 'bg-green-50';
-        textColor = 'text-green-800';
-        iconColor = 'text-green-500';
-    } else if (isPending) {
-        bgColor = 'bg-yellow-50';
-        textColor = 'text-yellow-800';
-        iconColor = 'text-yellow-500';
-    }
-
-    return (
-        <div className={`flex items-center p-3 rounded-lg ${bgColor}`}>
-            <CheckCircleIcon className={`w-6 h-6 mr-3 ${iconColor}`} />
-            <span className={`font-semibold ${textColor}`}>{label} {isPending && '(Pending)'}</span>
-        </div>
-    );
-  };
-  
   const isBookable = provider.isOnline;
 
   return (
@@ -70,10 +44,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ provider, onBook, onBack 
 
           <div className="my-6">
             <h2 className="text-xl font-bold mb-3">Trust Indicators</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <TrustIndicator label="Aadhaar" status={provider.verifications.aadhaar} />
-              <TrustIndicator label="Phone Verified" status={provider.verifications.phone} />
-              <TrustIndicator label="Police Verified" status={provider.verifications.police} />
+            <div className="bg-gray-100 p-3 rounded-lg text-center">
+                <p className="text-sm text-gray-600">Verification will be added in future updates</p>
             </div>
           </div>
           

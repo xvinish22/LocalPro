@@ -16,10 +16,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ provider, onGoHome, o
     const handleToggle = () => {
         const wantsToGoOnline = !provider.isOnline;
         if (wantsToGoOnline) {
-            if (!provider.isApproved) {
-                alert("Your profile is pending admin approval. You cannot go online until it is approved.");
-                return;
-            }
             if (!provider.pricePerHour || provider.pricePerHour <= 0) {
                 alert("Please set your price per hour before going online. You can do this in 'Manage Profile'.");
                 return;
@@ -55,11 +51,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ provider, onGoHome, o
                         </button>
                     </div>
                 </div>
-                {!provider.isApproved && (
-                    <div className="mt-2 text-center bg-yellow-400 text-yellow-900 font-semibold p-2 rounded-md text-sm">
-                        Profile under review for approval.
-                    </div>
-                )}
             </header>
             
             <main className="p-4 space-y-4 pb-32">

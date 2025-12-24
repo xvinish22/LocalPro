@@ -22,7 +22,7 @@ export interface Review {
 }
 
 export interface ServiceProvider {
-  id: string;
+  id:string;
   name: string;
   profilePhoto: string;
   isVerified: boolean; // Platform verified (e.g. after manual check)
@@ -43,7 +43,6 @@ export interface ServiceProvider {
   workGallery: string[];
   verifications: {
     phone: boolean;
-    aadhaar: 'verified' | 'pending' | 'unverified';
     police: boolean;
   };
   reviews: Review[];
