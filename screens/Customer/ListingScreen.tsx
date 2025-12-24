@@ -93,7 +93,7 @@ const ListingScreen: React.FC<ListingScreenProps> = ({ providers, onViewProfile,
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col min-h-screen">
       <header className="p-4 bg-white border-b sticky top-0 z-10">
         <div className="flex items-center justify-between">
             <div className="flex items-center">

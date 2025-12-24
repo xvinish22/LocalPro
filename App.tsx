@@ -61,7 +61,7 @@ const ProfileManagementScreen: React.FC<ProfileManagementScreenProps> = ({ provi
               type="text"
               inputMode="numeric"
               id="price"
-              value={price || ''}
+              value={price ? price : ''}
               onChange={e => setPrice(parseInt(e.target.value) || 0)}
               placeholder="Enter price"
               className="w-full text-lg outline-none bg-transparent"
@@ -75,10 +75,11 @@ const ProfileManagementScreen: React.FC<ProfileManagementScreenProps> = ({ provi
           <h3 className="text-lg font-semibold mb-3">Your Experience</h3>
           <label htmlFor="experience" className="block text-sm font-medium text-gray-700 mb-1">How many years of experience do you have?</label>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             id="experience"
             placeholder="e.g., 5"
-            value={experience || ''}
+            value={experience ? experience : ''}
             onChange={e => setExperience(parseInt(e.target.value) || 0)}
             className="w-full p-3 border border-gray-300 rounded-lg"
           />

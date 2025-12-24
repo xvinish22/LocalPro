@@ -42,7 +42,7 @@ const Step1_PhoneAuth: React.FC<{
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Enter your phone number</label>
                 <div className="flex">
                     <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">+91</span>
-                    <input type="tel" id="phone" placeholder="Enter phone number" value={data.phone} onChange={(e) => handleDataChange('phone', e.target.value.replace(/\D/g, ''))} disabled={phoneAuthState !== 'idle'} className="w-full p-3 border rounded-r-lg disabled:bg-gray-100" />
+                    <input type="tel" id="phone" placeholder="Enter phone number" value={data.phone} onChange={(e) => handleDataChange('phone', e.target.value.replace(/\D/g, ''))} disabled={phoneAuthState !== 'idle'} className="w-full p-3 border rounded-r-lg disabled:bg-gray-100" autoComplete="tel-national" />
                 </div>
             </div>
 
@@ -161,7 +161,7 @@ const Step4_Pricing: React.FC<{
         type="text"
         inputMode="numeric"
         id="price"
-        value={price || ''}
+        value={price ? price : ''}
         onChange={e => handleDataChange('price', parseInt(e.target.value) || 0)}
         placeholder="Enter price"
         className="w-full text-lg outline-none bg-transparent"
@@ -227,7 +227,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onOnboardingComplet
       setGeneratedOtp(newOtp);
       setOtpAttempts(prev => prev + 1);
       console.log(`[DEMO] Your verification code is: ${newOtp}`);
-      alert(`[DEMO] Your verification code is: ${newOtp}`);
+      alert(`[DEMO ONLY] Your verification code is: ${newOtp}`);
       setPhoneAuthState('sent');
       setResendTimer(60);
     }, 1500);

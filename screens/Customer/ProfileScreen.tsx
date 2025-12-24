@@ -40,7 +40,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ provider, onBook, onBack 
   const isBookable = provider.isOnline;
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-white">
       <header className="absolute top-0 left-0 p-4 z-10">
         <button onClick={onBack} className="bg-white/70 backdrop-blur-sm rounded-full p-2">
           <ArrowLeftIcon className="w-6 h-6 text-gray-800" />
