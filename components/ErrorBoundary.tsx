@@ -1,7 +1,5 @@
-// FIX: Using `React.Component` directly instead of a named import `Component`
-// to make the base class reference more explicit and resolve potential import issues
-// that can cause the "Property 'props' does not exist" error.
-import React, { ErrorInfo, ReactNode } from 'react';
+// FIX: Reverted to the standard class component pattern by importing `Component` as a named export from 'react' and extending it. This resolves the TypeScript error where `this.props` was not found on the class instance.
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -11,7 +9,7 @@ interface State {
   hasError: boolean;
 }
 
-class ErrorBoundary extends React.Component<Props, State> {
+class ErrorBoundary extends Component<Props, State> {
   state: State = {
     hasError: false,
   };

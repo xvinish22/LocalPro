@@ -28,6 +28,7 @@ const Step1_Profile: React.FC<{
     <div className="space-y-4">
         <input type="text" placeholder="Full Name" value={data.name} onChange={e => handleDataChange('name', e.target.value)} className="w-full p-3 border rounded-lg" />
         <div>
+            {/* MVP REQUIREMENT: Phone number is a simple input field without OTP verification. */}
             <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone number</label>
              <div className="flex">
                 <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">+91</span>
@@ -190,11 +191,11 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onOnboardingComplet
     if (!isStepComplete) return;
     const finalData: Omit<ServiceProvider, 'id'> = {
         name: data.name, profilePhoto: 'https://picsum.photos/id/1084/200/200', isVerified: false, 
-        isApproved: true, // Auto-approved by default for MVP
+        isApproved: true, // MVP REQUIREMENT: Auto-approve all new providers immediately.
         isOnline: false, rating: 0,
         jobsCompleted: 0, services: [data.service], pricePerHour: data.price, location: data.location!, availability: 'Today',
         experienceYears: data.experience, workGallery: [], 
-        verifications: { phone: true, police: false }, // Phone is considered 'verified' on input
+        verifications: { phone: true, police: false }, // MVP REQUIREMENT: Phone is considered 'verified' on input, no OTP.
         reviews: [],
     };
     onOnboardingComplete(finalData);

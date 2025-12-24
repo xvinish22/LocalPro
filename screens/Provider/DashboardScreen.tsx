@@ -15,6 +15,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ provider, onGoHome, o
 
     const handleToggle = () => {
         const wantsToGoOnline = !provider.isOnline;
+        // MVP REQUIREMENT: Check for profile completeness before allowing a provider to go online.
         if (wantsToGoOnline) {
             if (!provider.pricePerHour || provider.pricePerHour <= 0) {
                 alert("Please set your price per hour before going online. You can do this in 'Manage Profile'.");
@@ -39,6 +40,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ provider, onGoHome, o
         </div>
     );
     
+    // MVP REQUIREMENT: The dashboard UI renders immediately without checking for admin approval.
+    // The "Waiting for admin approval" banner has been removed.
     return (
         <div className="bg-gray-50 min-h-screen">
             <header className="bg-blue-600 p-4 text-white">
